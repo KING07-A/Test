@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- (unchanged head content for brevity) -->
+</head>
+<body>
+  <!-- Modal content area where item info is displayed -->
+  <div class="modal-content">
+    <img id="modalImage" alt="Item Image">
+    <p><b id="modalDescription"></b><br><span id="modalDescription2"></span></p>
+    <div class="divider"></div>
+    <p>
+      <b>dfhj ID:</b> <span id="modalId"></span><br>
+      <b>Icon Name:</b> <span id="modalIcon"></span><br>
+      <b>Item Type:</b> <span id="modalType"></span><br>
+      <b>Collection:</b> <span id="modalCollectionType"></span><br>
+      <b>Rarity:</b> <span id="modalRare"></span><br>
+      <b>Is Unique:</b> <span id="modalUnique"></span><br>
+      <b>Icon In AB:</b> <span id="modalInAB"></span>
+    </p>
+  </div>
+
+  <script>
+    // Function to open the modal and populate it with item data
+    function openModal(name, itemId, iconName, imageUrl, description, description2, itemType, collectionType, rare, isUnique, iconInAB) {
+      const modal = document.getElementById("modal");
+      const modalImgContainer = document.getElementById("modalImgContainer");
+      const modalTempImage = document.getElementById("modalTempImage");
+      const modalContent = document.querySelector('.modal-content');
+
+      // Fill modal fields with provided data or fallback text
+      document.getElementById("modalDescription").textContent = description || "No description available";
+      document.getElementById("modalDescription2").textContent = description2 || "No additional description";
+      document.getElementById("modalId").textContent = itemId || "Unknown";
+      document.getElementById("modalIcon").textContent = iconName || "Unknown";
+      document.getElementById("modalType").textContent = itemType || "Unknown";
+      document.getElementById("modalCollectionType").textContent = collectionType || "Unknown";
+      document.getElementById("modalRare").textContent = rare || "Unknown";
+      document.getElementById("modalUnique").textContent = isUnique ? "Yes" : "No";
+      document.getElementById("modalInAB").textContent = iconInAB || "Unknown";
+
+      // Load main modal image and fallback if loading fails
+      const modalImg = document.getElementById("modalImage");
+      modalImg.src = imageUrl;
+      modalImg.onerror = () => {
+        modalImg.src = 'https://raw.githubusercontent.com/starexxx/FFItems/19d339b0ec202ed4362128b91d51ec63b6ebfa73/assets/error-404.png';
+      };
+
+      // Load temporary image for animation purposes
+      modalTempImage.src = imageUrl;
+      modalTempImage.onerror = () => {
+        modalTempImage.src = 'https://raw.githubusercontent.com/starexxx/FFItems/19d339b0ec202ed4362128b91d51ec63b6ebfa73/assets/error-404.png';
+      };
+
+      // Calculate position of clicked icon card to animate from it
+      const cardRect = lastClickedCard.getBoundingClientRect();
+      const cardImg = lastClickedCard.querySelector('img');
+      modalImgContainer.style.width = `${cardImg.width}px`;
+      modalImgContainer.style.height = `${cardImg.height}px`;
+      modalImgContainer.style.left = `${cardRect.left + (cardRect.width - cardImg.width)/2}px`;
+      modalImgContainer.style.top = `${cardRect.top + (cardRect.height - cardImg.height)/2}px`;
+      modalImgContainer.style.transform = 'none';
+
+      // Show modal and disable body scrolling
+      modal.classList.add("show");
+      document.body.style.overflow = "hidden";
+      modalOpen = true;
+
+      // Animate modal image container to center
+      setTimeout(() => {
+        const modalRect = modal.getBoundingClientRect();
+        const targetLeft = modalRect.left + (modalRect.width - 100)/2;
+        const targetTop = modalRect.top + 50;
+        modalImgContainer.style.width = '100px';
+        modalImgContainer.style.height = '100px';
+        modalImgContainer.style.left = `${targetLeft}px`;
+        modalImgContainer.style.top = `${targetTop}px`;
+
+        // Fade in modal content
+        setTimeout(() => {
+          modalContent.style.opacity = '1';
+        }, 150);
+      }, 10);
+    }
+
+    // Function to render paginated icon cards based on filters
+    function renderIcons() {
+      const start = currentPage * itemsPerPage;
+      const end = start + itemsPerPage;
+      const visibleIcons = filteredData.slice(start, end);
+
+      const grid = document.getElementById("iconGrid");
+      grid.innerHTML = "";
+
+      // If no items matched filters, show a message
+      if (filteredData.length === 0) {
+        grid.innerHTML = `<div class="no-results">No items found matching your criteria</div>`;
+        document.getElementById("pagination").innerHTML = "";
+        return;
+      }
+
+      // Create card elements for each visible icon item
+      visibleIcons.forEach((icon, index) => {
+        const card = document.createElement("div");
+        card.className = "icon-card";
+        card.dataset.index = start + index;
+
+        // Set click handler to open modal with full item data
+        card.onclick = () => {
+          lastClickedCard = card;
+          openModal(
+            icon.name,
+            icon.itemId,
+            icon.iconName,
+            icon.imageUrl,
+            icon.description,
+            icon.description2,
+            icon.itemType,
+            icon.collectionType,
+            icon.Rare,
+            icon.IsUnique,
+            icon.IconInAB
+          );
+        };
+
+        // Add icon image and handle missing images
+        const img = document.createElement("img");
+        img.src = icon.imageUrl;
+        img.alt = icon.name;
+        img.onerror = () => {
+          img.src = 'https://raw.githubusercontent.com/starexxx/FFItems/19d339b0ec202ed4362128b91d51ec63b6ebfa73/assets/error-404.png';
+        };
+
+        card.appendChild(img);
+        grid.appendChild(card);
+      });
+
+      // Generate pagination buttons
+      updatePagination();
+    }
+  </script>
+</body>
+</html>
